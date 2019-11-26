@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.excellentia.surveyor.shared.ApiResponse;
 
-//change
+//change1
 //@CrossOrigin(origins = "http://localhost:4200")
 @CrossOrigin
 //@CrossOrigin(origins = "http://trythis.co.in")
