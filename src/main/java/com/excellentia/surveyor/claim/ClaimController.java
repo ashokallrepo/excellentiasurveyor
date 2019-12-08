@@ -1,13 +1,11 @@
 package com.excellentia.surveyor.claim;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,8 +29,13 @@ import com.excellentia.surveyor.insured.IInsuredService;
 import com.excellentia.surveyor.insured.Insured;
 import com.excellentia.surveyor.insurer.IInsurerService;
 import com.excellentia.surveyor.insurer.Insurer;
+import com.excellentia.surveyor.job_status.IJobStatusService;
+import com.excellentia.surveyor.job_status.JobStatus;
 import com.excellentia.surveyor.login.ILoginTrackService;
+import com.excellentia.surveyor.login.IRoleService;
+import com.excellentia.surveyor.login.IUserService;
 import com.excellentia.surveyor.login.LoginTrack;
+import com.excellentia.surveyor.login.User;
 import com.excellentia.surveyor.mis.IMISService;
 import com.excellentia.surveyor.mis.MIS;
 import com.excellentia.surveyor.registration_branch.IRegistrationBranchService;
@@ -47,6 +50,7 @@ import com.excellentia.surveyor.surveyor_db.Surveyor;
 
 @CrossOrigin
 @RestController
+@Scope("request")
 @RequestMapping("/apiclaim")
 public class ClaimController {
 	
@@ -62,9 +66,14 @@ public class ClaimController {
 	@Autowired
 	IBrokerService brSerivce;
 	
+	@Autowired
+	IRoleService roleSerivce;
 	
 	@Autowired
 	IInsuredService insdSerivce;
+	
+	@Autowired
+	IUserService userSerivce;
 	
 	
 	@Autowired
@@ -90,6 +99,9 @@ public class ClaimController {
 	@Autowired
 	IFieldStaffService fsSerivce;
 	
+	@Autowired
+	IJobStatusService jsSerivce;
+	
 	Insured insd = null;
 	Department dept = null;
 	SubDepartment sdept = null;
@@ -98,6 +110,7 @@ public class ClaimController {
 	EstimatedClaimAmt ecl = null; 
 	Surveyor surv = null;
 	FieldStaff flds = null;
+	
 		
 	
 	@GetMapping("/lookupdata")
@@ -125,6 +138,7 @@ public class ClaimController {
 			List<SubDepartment> subdept = sdSerivce.getSubDepartment();
 			List<Surveyor> surlist = surSerivce.getSurveyor();
 			List<FieldStaff> fsList = fsSerivce.getFieldStaff();
+			List<JobStatus> jsList = jsSerivce.getJobStatus();
 			
 			
 			resList.add(insurers);
@@ -137,6 +151,15 @@ public class ClaimController {
 			resList.add(subdept);
 			resList.add(surlist);
 			resList.add(fsList);
+			
+			String role = authentication.getAuthorities().toArray()[0].toString();
+			if(role.equals("FIELD_SURVEYOR")){
+				resList.add(jsSerivce.getJobStatusBasedOnRole(role));	
+			}
+			else{
+				resList.add(jsList);
+			}
+			
 			
 			
 			return new ApiResponse<>(HttpStatus.OK.value(), "sucessfully returned" ,resList);	
@@ -165,9 +188,9 @@ public class ClaimController {
 		else if(req.getDate() == null || req.getDate().trim().isEmpty()) {
 			msg = "Please proivde Date of intimation";
 		}
-		else if(req.getTime() == null || req.getTime().trim().isEmpty()) {
-			msg = "Please proivde Time of intimation";
-		}
+//		else if(req.getTime() == null || req.getTime().trim().isEmpty()) {
+//			msg = "Please proivde Time of intimation";
+//		}
 		else if(req.getInsuredSelected() == null || req.getInsuredSelected().trim().isEmpty()) {
 			msg = "Please proivde Insured Name ";
 		}
@@ -196,7 +219,7 @@ public class ClaimController {
 			}
 			
 		}
-		if(req.getSurveryorcontact() != null && !req.getSurveryorcontact().trim().isEmpty()) {
+		if(req.getSurveyorSelected()!=null && !req.getSurveyorSelected().trim().isEmpty() && req.getSurveryorcontact() != null && !req.getSurveryorcontact().trim().isEmpty()) {
 			try
 			{
 				Long.parseLong(req.getSurveryorcontact());
@@ -207,17 +230,25 @@ public class ClaimController {
 			}
 			
 		}
-		if(req.getFeildStaffContact() != null && !req.getFeildStaffContact().trim().isEmpty()) {
-			try
-			{
-				Long.parseLong(req.getFeildStaffContact());
+		
+		if(req.getFieldStaffSelected()!=null && !req.getFieldStaffSelected().trim().isEmpty()){
+			if(req.getFeildStaffContact() != null && !req.getFeildStaffContact().trim().isEmpty()) {
+				try
+				{
+					Long.parseLong(req.getFeildStaffContact());
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					msg = "Please proivde Correct Field Staff Contact Number";	
+				}
+				
 			}
-			catch(Exception e) {
-				e.printStackTrace();
-				msg = "Please proivde Correct Field Staff Contact Number";	
+			if(req.getFieldStaffUserName() == null || req.getFieldStaffUserName().trim().isEmpty()) {
+				msg = "Please proivde User ID for Field Staff ";
+				
 			}
-			
 		}
+		
 		
 		
 		return msg;
@@ -244,6 +275,18 @@ public class ClaimController {
 			MIS misobj = misSerivce.findById(id);
 			if(misobj !=null)
 			{
+				String role = authentication.getAuthorities().toArray()[0].toString();
+				if(role.equals("FIELD_SURVEYOR")){
+					
+					if(misobj.getStatus().compareTo(2l) == 0){
+						JobStatus jsObj = jsSerivce.findByStatusName("Not_Started");
+						if(jsObj !=null){
+							misobj.setStatusName("Not_Started");
+							misobj.setStatus(jsObj.getId());	
+						}
+						
+					}
+				}
 				resList.add(misobj);
 				return new ApiResponse<>(HttpStatus.OK.value(), "Success",resList);
 			}
@@ -266,7 +309,14 @@ public class ClaimController {
 		String msg = "";
 		
 		if(lt.getToken().equals(req.token)) {
-			List<MIS> list = misSerivce.getMISs();
+			List<MIS> list = null;
+			String role = authentication.getAuthorities().toArray()[0].toString();
+			if(role.equals("FIELD_SURVEYOR")){
+				list = misSerivce.getMISsBasedOnUserRole(authentication.getName(),role);
+			}
+			else{
+				list = misSerivce.getMISs();
+			}
 			if(list.size() > 0) {
 				resList = list;
 			}
@@ -352,9 +402,10 @@ public class ClaimController {
 							}
 							
 							//Assigned to job -------
-							if(msg.isEmpty()) {
+							
+							if(msg.isEmpty() && req.getSurveyorSelected() !=null && !req.getSurveyorSelected().isEmpty()) {
 								msg = saveSurveyor(req);
-								if(msg.isEmpty()) {
+								if(msg.isEmpty() && req.getFieldStaffSelected()!=null && !req.getFieldStaffSelected().isEmpty()) {
 									msg = saveFieldStaff(req);
 								}
 							}
@@ -362,16 +413,23 @@ public class ClaimController {
 							//save MIS details ------------------
 							if(msg.isEmpty()) {
 								MIS mis = new MIS();
-								mis.setJobNo(req.getJobNo());
+								mis.setJobNo(req.getJobNo() != null && !req.getJobNo().trim().isEmpty()?req.getJobNo():null);
 								mis.setInsType(obj.getType());
 								mis.setInsurer(obj.getId());
 								mis.setSrcOfInst(soi.getId());
 								mis.setBroker(brkr.getId());
 								mis.setInsurerClaimNo(req.getInsurerClaimNo());
+								mis.setFieldStaffId(req.getFieldStaffId());
 								Date dateAndTime;
 								try {
 									dateAndTime = misSerivce.combineDateAndTime(req.getDate(), req.getTime());
 									mis.setDtTimeIntimation(dateAndTime);
+									Long todayDt = new Date().getTime();
+									Long gvnDt = dateAndTime.getTime();
+									Long age = todayDt - gvnDt;
+									long diffDays = age / (24 * 60 * 60 * 1000);
+//									Long diff = TimeUnit.DAYS.convert(age, TimeUnit.MILLISECONDS);
+									mis.setAgeing(diffDays);
 								} catch (Exception e) {
 									e.printStackTrace();
 									msg = "Unable to parse Intimation Date and Time";
@@ -417,7 +475,8 @@ public class ClaimController {
 								mis.setUploadFile(req.getUploadFile()!=null ?req.getUploadFile().toString() : null);
 								mis.setSurveyor(surv != null ? surv.getId():null);
 								mis.setFieldStaff(flds != null ?flds.getId() :null);
-								
+								mis.setStatus(req.getStatusId() == null || req.getStatusId().isEmpty() ? null :Long.parseLong(req.getStatusId()));
+								mis.setUserRole(authentication.getAuthorities().toArray()[0].toString());
 								if(msg.isEmpty()) {
 									
 									mis = misSerivce.saveMIS(mis);	
@@ -428,6 +487,8 @@ public class ClaimController {
 									resList.add(obj);
 									resList.add(soi);
 									resList.add(brkr);
+									JobStatus jsObj = jsSerivce.findById(mis.getStatus());
+									mis.setStatusName(jsObj.getStatus());
 									resList.add(mis);
 								}
 							}
@@ -608,10 +669,22 @@ public class ClaimController {
 		}
 		
 		flds.setName(req.getFieldStaffSelected());
+		flds.setUserName(req.getFieldStaffUserName());
 		try {
+			
+			if(flds != null && flds.getId() == null){
+				User ur = new User();
+				ur.setUserId(flds.getUserName());
+				ur.setUserName(flds.getUserName());
+				userSerivce.saveNewUser(ur);
+				ur = userSerivce.findByUsername(flds.getUserName());
+				flds.setUserId(ur.getId());
+				
+			}
 			flds = fsSerivce.saveFieldStaff(flds);	
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			msg = "Unable to save field staff";
 		}
 		

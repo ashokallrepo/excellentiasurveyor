@@ -61,6 +61,8 @@ public class ClaimRequestDTO {
     String fieldStaffemail;
     String feildStaffContact;
     String fieldStaffId;
+    String fieldStaffUserName;
+    String statusId;
 	
 	String token;
 	
@@ -68,6 +70,18 @@ public class ClaimRequestDTO {
 	
 	
 	
+	public String getStatusId() {
+		return statusId;
+	}
+
+
+
+	public void setStatusId(String statusId) {
+		this.statusId = statusId;
+	}
+
+
+
 	public Long getMisid() {
 		return misid;
 	}
@@ -417,34 +431,41 @@ public class ClaimRequestDTO {
 
 
 
+	public String getFieldStaffUserName() {
+		return fieldStaffUserName;
+	}
+
+
+
+	public void setFieldStaffUserName(String fieldStaffUserName) {
+		this.fieldStaffUserName = fieldStaffUserName;
+	}
+
+
+
 	@Override
 	public String toString() {
 		return "ClaimRequestDTO [jobNo=" + jobNo + ", misid=" + misid + ", id=" + id + ", gst=" + gst
-				+ ", insurerClaimNo=" + insurerClaimNo + ", email=" + email + ", add=" + add
-				+ ", contactNo=" + contactNo + ", name=" + name + ", date=" + date + ", time=" + time
-				+ ", brokerSelected=" + brokerSelected + ", insurerSelected=" + insurerSelected + ", stateSelected="
-				+ stateSelected + ", srcOfInsSelected=" + srcOfInsSelected
-				+ ", brokerId=" + brokerId + ", srcOfInsId=" + srcOfInsId + ", typeSelected=" + typeSelected
-				+ ", insuredId=" + insuredId + ", insuredSelected=" + insuredSelected + ", estClaimAmtSelected="
-				+ estClaimAmtSelected + ", estiClaimAmtId=" + estiClaimAmtId + ", regBranchSelected="
-				+ regBranchSelected + ", regBranchId=" + regBranchId + ", mailSendToBranchSelected="
-				+ mailSendToBranchSelected + ", mailSendToBrId=" + mailSendToBrId + ", deptSelected=" + deptSelected
-				+ ", deptId=" + deptId + ", subDeptSelected=" + subDeptSelected + ", subDeptId=" + subDeptId
-				+ ", insuredContactNo=" + insuredContactNo + ", insuredEmail=" + insuredEmail + ", insuredAdd="
-				+ insuredAdd + ", insureRepName=" + insureRepName
-				+ ", insuredPolNo=" + insuredPolNo + ", locOfLoss=" + locOfLoss + ", grNo=" + grNo + ", grDate="
-				+ grDate + ", invoiceNo=" + invoiceNo + ", invoiceDate=" + invoiceDate + ", regDate=" + regDate
-				+ ", spclInst=" + spclInst + ", uploadFile=" + uploadFile + ", surveyorSelected=" + surveyorSelected
-				+ ", surveyorId=" + surveyorId + ", surveyoremail=" + surveyoremail + ", surveryorcontact="
-				+ surveryorcontact + ", fieldStaffSelected=" + fieldStaffSelected + ", fieldStaffemail="
-				+ fieldStaffemail + ", feildStaffContact=" + feildStaffContact + ", fieldStaffId=" + fieldStaffId
-				+ ", token=" + token + "]";
+				+ ", insurerClaimNo=" + insurerClaimNo + ", email=" + email + ", add=" + add + ", contactNo="
+				+ contactNo + ", name=" + name + ", date=" + date + ", time=" + time + ", brokerSelected="
+				+ brokerSelected + ", insurerSelected=" + insurerSelected + ", stateSelected=" + stateSelected
+				+ ", srcOfInsSelected=" + srcOfInsSelected + ", brokerId=" + brokerId + ", srcOfInsId=" + srcOfInsId
+				+ ", typeSelected=" + typeSelected + ", insuredId=" + insuredId + ", insuredSelected=" + insuredSelected
+				+ ", estClaimAmtSelected=" + estClaimAmtSelected + ", estiClaimAmtId=" + estiClaimAmtId
+				+ ", regBranchSelected=" + regBranchSelected + ", regBranchId=" + regBranchId
+				+ ", mailSendToBranchSelected=" + mailSendToBranchSelected + ", mailSendToBrId=" + mailSendToBrId
+				+ ", deptSelected=" + deptSelected + ", deptId=" + deptId + ", subDeptSelected=" + subDeptSelected
+				+ ", subDeptId=" + subDeptId + ", insuredContactNo=" + insuredContactNo + ", insuredEmail="
+				+ insuredEmail + ", insuredAdd=" + insuredAdd + ", insureRepName=" + insureRepName + ", insuredPolNo="
+				+ insuredPolNo + ", locOfLoss=" + locOfLoss + ", grNo=" + grNo + ", grDate=" + grDate + ", invoiceNo="
+				+ invoiceNo + ", invoiceDate=" + invoiceDate + ", regDate=" + regDate + ", spclInst=" + spclInst
+				+ ", uploadFile=" + uploadFile + ", surveyorSelected=" + surveyorSelected + ", surveyorId=" + surveyorId
+				+ ", surveyoremail=" + surveyoremail + ", surveryorcontact=" + surveryorcontact
+				+ ", fieldStaffSelected=" + fieldStaffSelected + ", fieldStaffemail=" + fieldStaffemail
+				+ ", feildStaffContact=" + feildStaffContact + ", fieldStaffId=" + fieldStaffId
+				+ ", fieldStaffUserName=" + fieldStaffUserName + ", token=" + token + "]";
 	}
-	
-	
-	
-	
-	
+
 
 
 }

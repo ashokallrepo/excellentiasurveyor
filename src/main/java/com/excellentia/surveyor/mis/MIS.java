@@ -149,8 +149,26 @@ public class MIS {
 	@Transient
 	String deptNameVal;
 	
+	@Transient
+	String statusName;
+	
+	@Transient
+	String userRole;
+	
+	@Transient
+	String fieldStaffId;
 	
 	
+	
+	
+	
+	
+	public String getFieldStaffId() {
+		return fieldStaffId;
+	}
+	public void setFieldStaffId(String fieldStaffId) {
+		this.fieldStaffId = fieldStaffId;
+	}
 	public String getSrcOfInstName() {
 		return srcOfInstName;
 	}
@@ -410,6 +428,18 @@ public class MIS {
 	}
 	public void setSrcOfInst(Long srcOfInst) {
 		this.srcOfInst = srcOfInst;
+	}
+	public String getStatusName() {
+		return statusName;
+	}
+	public void setStatusName(String statusName) {
+		this.statusName = statusName;
+	}
+	public String getUserRole() {
+		return userRole;
+	}
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
 	}
 	
 	

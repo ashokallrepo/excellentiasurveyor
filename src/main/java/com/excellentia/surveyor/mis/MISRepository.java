@@ -22,4 +22,8 @@ public interface MISRepository extends CrudRepository<MIS, Long> {
 	@Query("Select u from MIS u where u.jobNo like ?1% order by u.jobNo asc")
 	List<MIS> getLastJobNo(String jobno);
 	
+	
+	@Query("Select u from MIS u where u.fieldStaff = ?1")
+	List<MIS> getListOnFieldStaff(Long urid);
+	
 }

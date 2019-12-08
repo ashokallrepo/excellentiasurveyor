@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.excellentia.surveyor.insured.Insured;
 import com.excellentia.surveyor.source_of_instruction.SourceOfInstruction;
 
 @Service
@@ -70,7 +71,12 @@ public class DepartmentService implements IDepartmentService{
 
 	@Override
 	public Map<Long, Department> getListOnMultipleIds(List<Long> ids) {
-		List<Department> li = ir.getListOnMultipleIds(ids);
+		List<Department> li = new ArrayList<Department>();
+		if(ids.size()>0)
+		{
+			li = ir.getListOnMultipleIds(ids);
+			
+		}
 		return getRecordsInMap(li);
 	}
 	

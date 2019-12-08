@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.excellentia.surveyor.department.Department;
 import com.excellentia.surveyor.registration_branch.RegistrationBranch;
 import com.excellentia.surveyor.source_of_instruction.SourceOfInstruction;
 
@@ -67,7 +68,13 @@ public class EstimatedClaimAmtService implements IEstimatedClaimAmtService{
 
 	@Override
 	public Map<Long, EstimatedClaimAmt> getListOnMultipleIds(List<Long> ids) {
-		List<EstimatedClaimAmt> li =ir.getListOnMultipleIds(ids);
+		List<EstimatedClaimAmt> li = new ArrayList<EstimatedClaimAmt>();
+		if(ids.size()>0)
+		{
+			li = ir.getListOnMultipleIds(ids);
+			
+		}
+		
 		return getRecordsInMap(li);
 	}
 	

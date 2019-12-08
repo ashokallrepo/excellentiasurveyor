@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -31,6 +32,13 @@ public class FieldStaff {
 	
 	@Column(name = "employee")
 	Long employee;
+	
+	@Column(name = "user_id")
+	Long userId;
+	
+	@Transient
+	String userName;
+	
 
 	public Long getId() {
 		return id;
@@ -70,6 +78,22 @@ public class FieldStaff {
 
 	public void setEmployee(Long employee) {
 		this.employee = employee;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	
 	

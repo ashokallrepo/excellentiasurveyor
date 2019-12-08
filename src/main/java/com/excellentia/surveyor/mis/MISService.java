@@ -15,8 +15,14 @@ import com.excellentia.surveyor.department.Department;
 import com.excellentia.surveyor.department.IDepartmentService;
 import com.excellentia.surveyor.estimated_claim_amt.EstimatedClaimAmt;
 import com.excellentia.surveyor.estimated_claim_amt.IEstimatedClaimAmtService;
+import com.excellentia.surveyor.fieldstaff.FieldStaff;
+import com.excellentia.surveyor.fieldstaff.IFieldStaffService;
 import com.excellentia.surveyor.insured.IInsuredService;
 import com.excellentia.surveyor.insured.Insured;
+import com.excellentia.surveyor.job_status.IJobStatusService;
+import com.excellentia.surveyor.job_status.JobStatus;
+import com.excellentia.surveyor.login.IUserService;
+import com.excellentia.surveyor.login.User;
 import com.excellentia.surveyor.source_of_instruction.ISourceOfInsturction;
 import com.excellentia.surveyor.source_of_instruction.SourceOfInstruction;
 
@@ -37,16 +43,24 @@ public class MISService implements IMISService{
 	
 	@Autowired
 	private IEstimatedClaimAmtService er;
-
-	@Override
-	public List<MIS> getMISs() {
-		List<MIS> list = new ArrayList<MIS>();
-		mr.findAll().forEach(e -> list.add(e));
-		
+	
+	@Autowired
+	private IJobStatusService js;
+	
+	@Autowired
+	private IFieldStaffService fs;
+	
+	@Autowired
+	private IUserService us;
+	
+	
+	private void transformMIS(List<MIS> list){
 		List<Long> sids = new ArrayList<Long>();
 		List<Long> insids = new ArrayList<Long>();
 		List<Long> deptids = new ArrayList<Long>();
 		List<Long> estids = new ArrayList<Long>();
+		List<Long> statusids = new ArrayList<Long>();
+		
 		for(int i=0;i<list.size();i++) {
 			MIS obj = list.get(i);
 			if(obj.getSrcOfInst()!=null) {
@@ -61,6 +75,9 @@ public class MISService implements IMISService{
 			if(obj.getDeptName()!=null) {
 				estids.add(obj.getDeptName()); 
 			}
+			if(obj.getStatus()!=null) {
+				statusids.add(obj.getStatus()); 
+			}
 			
 		}
 		
@@ -68,6 +85,7 @@ public class MISService implements IMISService{
 		Map<Long,Insured> inmap= ir.getListOnMultipleIds(insids);
 		Map<Long,Department> dmap= dr.getListOnMultipleIds(deptids);
 		Map<Long,EstimatedClaimAmt> emap= er.getListOnMultipleIds(estids);
+		Map<Long,JobStatus> jsmap= js.getListOnMultipleIds(statusids);
 		
 		for(int i=0;i<list.size();i++) {
 			MIS obj = list.get(i);
@@ -88,7 +106,19 @@ public class MISService implements IMISService{
 				obj.setEstClaimAmtValue(emap.get(obj.getEstClaimAmt()).getValue());
 			}
 			
+			if(!jsmap.isEmpty() && jsmap.containsKey(obj.getStatus())) {
+				obj.setStatusName(jsmap.get(obj.getStatus()).getStatus());
+			}
+			
 		}
+	}
+
+	@Override
+	public List<MIS> getMISs() {
+		List<MIS> list = new ArrayList<MIS>();
+		mr.findAll().forEach(e -> list.add(e));
+		
+		transformMIS(list);
 		
 		return list;
 	}
@@ -97,12 +127,13 @@ public class MISService implements IMISService{
 		Date date=new SimpleDateFormat("yyyy-MM-dd").parse(d);  
 	    
 	    DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	    Date dt = dateFormat.parse(t + ":00:00");
+	    //Date dt = dateFormat.parse(t + ":00:00");
 	    
 	    String startingDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-	    String startingTime = new SimpleDateFormat("HH:mm:ss").format(dt);
+	  //  String startingTime = new SimpleDateFormat("HH:mm:ss").format(dt);
 	    
-	    date=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startingDate + " " + startingTime);
+//	    date=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startingDate + " " + startingTime);
+	    date=new SimpleDateFormat("yyyy-MM-dd").parse(startingDate);
 	    
 	    System.out.println(date);
 	    
@@ -114,6 +145,40 @@ public class MISService implements IMISService{
 		MIS misObj = null;
 		MIS misNew = null;
 		String jobno = "";
+		
+		
+		//if logged in user is not FIELD SURVEYOR 
+		if(!(mis.getUserRole() != null && mis.getUserRole().equals("FIELD_SURVEYOR"))){
+			
+			//new job + existing field staff or new job + new field staff
+			if(mis.getJobNo() == null && mis.getFieldStaff() !=null )
+			{
+				JobStatus jsObj = js.findByStatusName("Assigned");
+				mis.setStatus(jsObj.getId());//if field staff provided then put Assign ID is 2
+			}
+			
+			//new job + no field staff
+			if(mis.getJobNo() == null && mis.getFieldStaff() == null)
+			{
+				JobStatus jsObj = js.findByStatusName("Open");
+				mis.setStatus(jsObj.getId());//if field staff provided then put Open ID is 2
+			}
+			
+			//existing job + no field staff
+			if(mis.getJobNo() !=null && mis.getFieldStaff() == null)
+			{
+				JobStatus jsObj = js.findByStatusName("Open");
+				mis.setStatus(jsObj.getId());//if field staff provided then put Open ID is 2
+			}
+			
+			//existing job + new field staff 
+			if(mis.getJobNo() !=null && mis.getFieldStaff() !=null  && (mis.getFieldStaffId() == null || mis.getFieldStaffId().trim().isEmpty()))
+			{
+				JobStatus jsObj = js.findByStatusName("Assigned");
+				mis.setStatus(jsObj.getId());//if field staff provided then put Assign ID is 2
+			}
+			
+		}
 	    
 	
 		if(mis.getJobNo() != null && !mis.getJobNo().trim().isEmpty()) { //for edit
@@ -152,7 +217,12 @@ public class MISService implements IMISService{
 		    	 jobno = jobno + 1;
 				  mis.setJobNo(jobno);
 		    }
+		    
+		  
 		}
+		
+	
+		  
 		
 		if(misNew !=null) {
 //			misObj = findById(mis.getId());
@@ -181,6 +251,8 @@ public class MISService implements IMISService{
 			misObj.setUploadFile(mis.getUploadFile());
 			misObj.setSurveyor(mis.getSurveyor());
 			misObj.setFieldStaff(mis.getFieldStaff());
+			misObj.setStatus(mis.getStatus());
+			misObj.setAgeing(mis.getAgeing());
 		}
 		else {
 			misObj = mis;
@@ -196,6 +268,20 @@ public class MISService implements IMISService{
 	public MIS findById(Long id) {
 		MIS obj =mr.findById(id).get();
 		return obj;
+	}
+
+	@Override
+	public List<MIS> getMISsBasedOnUserRole(String un, String role) {
+		List<MIS> list = new ArrayList<MIS>();
+		if(role.equals("FIELD_SURVEYOR")){
+			User ur = us.findByUsername(un);
+			FieldStaff fsObj = fs.findByUserId(ur.getId());
+			mr.getListOnFieldStaff(fsObj.getId()).forEach(e -> list.add(e));
+		}
+		
+		transformMIS(list);
+		
+		return list;
 	}
 
 }

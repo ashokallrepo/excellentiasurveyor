@@ -72,7 +72,14 @@ public class InsuredService implements IInsuredService{
 
 	@Override
 	public Map<Long, Insured> getListOnMultipleIds(List<Long> ids) {
-		List<Insured> li = ir.getListOnMultipleIds(ids);
+		
+		List<Insured> li = new ArrayList<Insured>();
+		if(ids.size()>0)
+		{
+			li = ir.getListOnMultipleIds(ids);
+			
+		}
+		
 		return getRecordsInMap(li);
 	}
 	

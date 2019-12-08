@@ -79,8 +79,14 @@ public class SourceOfInsturctionService implements ISourceOfInsturction{
 
 	@Override
 	public Map<Long, SourceOfInstruction> getListOnMultipleIds(List<Long> ids) {
-		List<SourceOfInstruction> li = sr.getListOnMultipleIds(ids);
+		List<SourceOfInstruction> li = new ArrayList<SourceOfInstruction>();
+		if(ids.size()>0)
+		{
+			li = sr.getListOnMultipleIds(ids);
+			
+		}
 		return getRecordsInMap(li);
+		
 	}
 	
 	
